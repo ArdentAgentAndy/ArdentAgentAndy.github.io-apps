@@ -1,0 +1,2617 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dietz</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@400;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── Base ─────────────────────────────────────────────── */
+  :root {
+    --bg: #0e0e10;
+    --surface: #16161a;
+    --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.15);
+    --text: #f0eff4;
+    --muted: rgba(240,239,244,0.45);
+    --accent: #c3dee8;
+    --accent-dim: rgba(195,222,232,0.12);
+    --accent-dim2: rgba(195,222,232,0.06);
+    --red: #ff6b6b;
+    --red-dim: rgba(255,107,107,0.12);
+    --radius: 12px;
+    --radius-sm: 8px;
+    /* flashcard vars */
+    --fc-accent: #c3dee8;
+    --fc-accent2: #8eb9c7;
+    --fc-surface: #16161a;  
+    --fc-surface2: #1e1e24;
+    --fc-border: #2a2a32;
+    --fc-muted: rgba(240,239,244,0.45);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── Tab Nav ──────────────────────────────────────────── */
+  .app-nav {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border-strong);
+    padding: 0 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .nav-brand {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 1rem 1.25rem 1rem 0;
+    border-right: 0.5px solid var(--border-strong);
+    margin-right: 1rem;
+    white-space: nowrap;
+  }
+
+  .nav-tab {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1rem 1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    margin-bottom: -0.5px;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ── Pages ────────────────────────────────────────────── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ════════════════════════════════════════════════════════
+     REVISION TRACKER PAGE
+  ════════════════════════════════════════════════════════ */
+  #page-tracker { padding: 2rem 1.5rem 4rem; }
+
+  .mono { font-family: 'Space Mono', monospace; }
+
+  .tracker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .header-left h1 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.02em; }
+  .header-left p { font-size: 0.85rem; color: var(--muted); margin-top: 4px; font-family: 'Space Mono', monospace; }
+
+  .header-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  .config-btn {
+    background: var(--surface2);
+    border: 0.5px solid var(--border-strong);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+  }
+  .config-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  .copy-btn {
+    background: var(--accent-dim);
+    border: 0.5px solid rgba(195,222,232,0.3);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .copy-btn:hover { background: rgba(195,222,232,0.2); }
+  .copy-btn.copied {
+    background: rgba(91,200,122,0.15);
+    border-color: rgba(91,200,122,0.4);
+    color: #5bc87a;
+  }
+
+  .today-total {
+    background: var(--accent-dim2);
+    border: 0.5px solid rgba(195,222,232,0.2);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .today-total span:first-child { font-size: 0.8rem; color: var(--muted); font-family: 'Space Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+  .total-time { font-family: 'Space Mono', monospace; font-size: 1.5rem; color: var(--accent); font-weight: 700; }
+
+  .section-label { font-size: 0.7rem; font-family: 'Space Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; padding-left: 2px; }
+
+  .subjects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .subject-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .subject-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--subject-color, transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .subject-card.active::before { opacity: 1; }
+  .subject-card.active { border-color: var(--subject-color, var(--accent)); background: var(--surface2); }
+
+  .subject-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 0.5rem; }
+  .subject-name { font-size: 1rem; font-weight: 500; color: var(--text); }
+
+  .btn-edit-subject {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-edit-subject:hover { color: var(--text); }
+
+  .timer-display {
+    font-family: 'Space Mono', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+  .subject-card.active .timer-display { color: var(--subject-color, var(--accent)); }
+
+  .session-info { font-size: 0.75rem; color: var(--muted); margin-bottom: 1rem; font-family: 'Space Mono', monospace; }
+
+  .card-footer { display: flex; gap: 0.5rem; align-items: center; }
+
+  .btn-timer {
+    flex: 1;
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    border: 0.5px solid var(--border-strong);
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .btn-start { background: var(--accent-dim); color: var(--accent); border-color: rgba(195,222,232,0.3); }
+  .btn-start:hover { background: rgba(195,222,232,0.2); }
+  .btn-stop { background: var(--red-dim); color: var(--red); border-color: rgba(255,107,107,0.3); }
+  .btn-stop:hover { background: rgba(255,107,107,0.2); }
+
+  .btn-log {
+    padding: 10px 14px;
+    background: transparent;
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .btn-log:hover { color: var(--text); }
+  .btn-log:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Modals */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; font-family: 'Space Mono', monospace; color: var(--text); letter-spacing: -0.01em; }
+
+  .field { margin-bottom: 1rem; }
+  .field label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; font-family: 'Space Mono', monospace; letter-spacing: 0.04em; text-transform: uppercase; }
+  .field input {
+    width: 100%;
+    background: var(--bg);
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82rem;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus { border-color: var(--accent); }
+
+  .modal-footer { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
+
+  .btn-save {
+    flex: 1;
+    background: var(--accent-dim);
+    border: 0.5px solid rgba(195,222,232,0.4);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: all 0.15s;
+  }
+  .btn-save:hover { background: rgba(195,222,232,0.22); }
+
+  .btn-cancel {
+    background: transparent;
+    border: 0.5px solid var(--border-strong);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+  .btn-cancel:hover { color: var(--text); }
+
+  .subject-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.25rem; }
+
+  .subject-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg);
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+  }
+
+  .subject-list-item input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82rem;
+    outline: none;
+    padding: 2px 4px;
+  }
+
+  .color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  .btn-delete {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 2px 4px;
+    transition: color 0.15s;
+    line-height: 1;
+  }
+  .btn-delete:hover { color: var(--red); }
+
+  .btn-add-subject {
+    width: 100%;
+    background: transparent;
+    border: 0.5px dashed var(--border-strong);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: all 0.15s;
+    margin-bottom: 1rem;
+  }
+  .btn-add-subject:hover { color: var(--accent); border-color: rgba(195,222,232,0.4); }
+
+  .log-list { max-height: 200px; overflow-y: auto; border: 0.5px solid var(--border); border-radius: var(--radius-sm); margin-top: 1.5rem; }
+  .log-item { display: flex; justify-content: space-between; padding: 8px 12px; font-size: 0.72rem; font-family: 'Space Mono', monospace; border-bottom: 0.5px solid var(--border); color: var(--muted); }
+  .log-item:last-child { border-bottom: none; }
+  .log-item strong { color: var(--text); }
+
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: var(--surface2);
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text);
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.2s;
+    pointer-events: none;
+    max-width: 280px;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { border-color: rgba(195,222,232,0.4); color: var(--accent); }
+  .toast.error { border-color: rgba(255,107,107,0.4); color: var(--red); }
+
+  /* ════════════════════════════════════════════════════════
+     FLASHCARD PAGE
+  ════════════════════════════════════════════════════════ */
+  #page-flashcard {
+    font-family: 'DM Mono', monospace;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 64px;
+  }
+  #page-flashcard.active { display: flex; }
+
+  .fc-header {
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .fc-header h1 {
+    font-family: 'DM Mono', monospace;
+    font-size: 2rem;
+    color: var(--fc-accent);
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+
+  .fc-header h1 span {
+    font-size: 0.85rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--fc-muted);
+    display: block;
+    font-weight: 300;
+    margin-top: 4px;
+    letter-spacing: 0.08em;
+  }
+
+  .file-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--fc-surface2);
+    border: 1px solid var(--fc-border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    font-size: 0.75rem;
+    color: var(--fc-muted);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    white-space: nowrap;
+    font-family: 'Space Mono', monospace;
+  }
+  .file-label:hover { border-color: var(--fc-accent); color: var(--fc-accent); }
+  #fileInput { display: none; }
+
+  .controls-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .small-btn {
+    background: var(--fc-surface2);
+    color: var(--text);
+    border: 1px solid var(--fc-border);
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    letter-spacing: 0.04em;
+  }
+  .small-btn:hover { border-color: var(--fc-accent); color: var(--fc-accent); }
+
+  #twoPartBtn {
+    background: var(--fc-surface2);
+    color: var(--fc-muted);
+    border: 1px solid var(--fc-border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+  }
+  #twoPartBtn.active { background: #1e1530; border-color: var(--fc-purple); color: var(--fc-purple); }
+  #twoPartBtn:hover { border-color: var(--fc-purple); color: var(--fc-purple); }
+
+  .stats-bar {
+    width: 100%;
+    max-width: 680px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .stat-box {
+    background: var(--fc-surface);
+    border: 1px solid var(--fc-border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    text-align: center;
+  }
+
+  .stat-box .val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    color: var(--fc-accent);
+    line-height: 1;
+  }
+  .stat-box .lbl {
+    font-size: 0.65rem;
+    color: var(--fc-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 4px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .progress-wrap { width: 100%; max-width: 680px; margin-bottom: 24px; }
+  .progress-track { height: 4px; background: var(--fc-border); border-radius: 99px; overflow: hidden; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--fc-accent2), var(--fc-accent));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-labels { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--fc-muted); margin-top: 6px; letter-spacing: 0.08em; font-family: 'Space Mono', monospace; }
+
+  .window-indicator {
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 16px;
+    font-size: 0.7rem;
+    color: var(--fc-muted);
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Space Mono', monospace;
+  }
+  .window-indicator .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--fc-accent2);
+    display: inline-block;
+    animation: fc-pulse 1.6s infinite;
+  }
+  @keyframes fc-pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
+
+  .two-part-banner {
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 12px;
+    background: #1e1530;
+    border: 1px solid var(--fc-purple);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 0.72rem;
+    color: var(--fc-purple);
+    letter-spacing: 0.07em;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Space Mono', monospace;
+  }
+  .two-part-banner.visible { display: flex; }
+
+  #flashcard {
+    width: 100%;
+    max-width: 680px;
+    background: var(--fc-surface);
+    border: 1px solid var(--fc-border);
+    border-radius: 18px;
+    padding: 36px 32px 28px;
+    transition: background 0.35s, border-color 0.35s;
+    position: relative;
+    min-height: 200px;
+  }
+  #flashcard.correct { background: #1b2e21; border-color: var(--fc-green); }
+  #flashcard.wrong   { background: #2e1b1b; border-color: var(--fc-red); }
+  #flashcard.partial { background: #1e1530; border-color: var(--fc-purple); }
+
+  .word-badge {
+    display: inline-block;
+    background: var(--fc-surface2);
+    border: 1px solid var(--fc-border);
+    border-radius: 6px;
+    font-size: 0.65rem;
+    color: var(--fc-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    margin-bottom: 14px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .phrase-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--text);
+    margin-bottom: 24px;
+    line-height: 1.2;
+  }
+
+  .lives-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    align-items: center;
+    font-size: 0.7rem;
+    color: var(--fc-muted);
+    letter-spacing: 0.06em;
+    font-family: 'Space Mono', monospace;
+  }
+  .life { font-size: 1rem; transition: opacity 0.3s; }
+  .life.dead { opacity: 0.2; }
+
+  .input-row { display: flex; gap: 10px; margin-bottom: 14px; }
+
+  .two-part-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .two-part-input-group { display: flex; gap: 10px; align-items: center; }
+  .two-part-label { font-size: 0.68rem; color: var(--fc-muted); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; min-width: 52px; font-family: 'Space Mono', monospace; }
+  .part-status { font-size: 0.9rem; min-width: 20px; text-align: center; }
+
+  input[type="text"] {
+    flex: 1;
+    background: var(--fc-surface2);
+    border: 1px solid var(--fc-border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus { border-color: var(--fc-accent2); }
+  input[type="text"].input-correct { border-color: var(--fc-green); background: #1b2e21; }
+  input[type="text"].input-wrong  { border-color: var(--fc-red); }
+  input[type="text"].input-purple { border-color: var(--fc-purple); }
+
+  .btn {
+    background: var(--fc-accent);
+    color: #0e0e10;
+    border: none;
+    border-radius: var(--radius);
+    padding: 12px 22px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.2s, transform 0.1s;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+  .btn:hover { background: #f0d060; }
+  .btn:active { transform: scale(0.97); }
+  .btn.secondary {
+    background: var(--fc-surface2);
+    color: var(--text);
+    border: 1px solid var(--fc-border);
+  }
+  .btn.secondary:hover { border-color: var(--fc-accent); color: var(--fc-accent); background: var(--fc-surface2); }
+
+  .answer-reveal {
+    margin-top: 10px;
+    padding: 12px 16px;
+    background: #2e1b1b;
+    border: 1px solid var(--fc-red);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    color: #f0a0a0;
+    letter-spacing: 0.04em;
+    font-family: 'DM Mono', monospace;
+  }
+  .answer-reveal strong { color: var(--fc-red); }
+  .answer-reveal.partial-reveal { background: #1e1530; border-color: var(--fc-purple); color: #c4b5fd; }
+  .answer-reveal.partial-reveal strong { color: var(--fc-purple); }
+
+  .feedback-msg {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    min-height: 22px;
+    transition: color 0.3s;
+    font-family: 'Space Mono', monospace;
+  }
+  .feedback-msg.ok { color: var(--fc-green); }
+  .feedback-msg.bad { color: var(--fc-red); }
+  .feedback-msg.partial { color: var(--fc-purple); }
+
+  .card-actions {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .table-wrap {
+    width: 100%;
+    max-width: 680px;
+    margin-top: 24px;
+    display: none;
+    border: 1px solid var(--fc-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--fc-surface2); }
+  th { padding: 10px 14px; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fc-muted); text-align: left; font-family: 'Space Mono', monospace; }
+  td { padding: 10px 14px; font-size: 0.85rem; border-top: 1px solid var(--fc-border); vertical-align: middle; font-family: 'DM Mono', monospace; }
+  tr:hover td { background: var(--fc-surface2); }
+  .badge-lives { display: flex; gap: 4px; }
+  .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--fc-border); }
+  .pip.active { background: var(--fc-accent2); }
+  .pip.done { background: var(--fc-green); }
+
+  .empty-state { text-align: center; color: var(--fc-muted); padding: 40px 0; }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+  .empty-state p { font-size: 0.85rem; letter-spacing: 0.05em; font-family: 'Space Mono', monospace; }
+
+  #completionScreen {
+    display: none;
+    width: 100%;
+    max-width: 680px;
+    background: var(--fc-surface);
+    border: 1px solid var(--fc-accent);
+    border-radius: 18px;
+    padding: 48px 32px;
+    text-align: center;
+  }
+  #completionScreen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    color: var(--fc-accent);
+    margin-bottom: 10px;
+  }
+  #completionScreen p { color: var(--fc-muted); font-size: 0.85rem; margin-bottom: 24px; font-family: 'Space Mono', monospace; }
+
+  /* ════════════════════════════════════════════════════════
+     SIGHT READING PAGE
+  ════════════════════════════════════════════════════════ */
+  #page-sight {
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .sr-header {
+    margin-bottom: 1.5rem;
+  }
+  .sr-header h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .sr-header p {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+
+  .sr-settings-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .sr-setting-group {
+    background: var(--surface);
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    flex: 1;
+    min-width: 130px;
+  }
+
+  .sr-setting-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 4px;
+  }
+
+  .sr-setting-group select {
+    width: 100%;
+    font-size: 0.82rem;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.02em;
+  }
+
+  .sr-main-area {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .sr-staff-wrap {
+    background: var(--surface);
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 14px;
+    flex: 0 0 auto;
+  }
+
+  canvas#staff-canvas { display: block; }
+
+  .sr-input-panel {
+    flex: 1;
+    min-width: 220px;
+    background: var(--surface);
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .sr-section-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 6px;
+  }
+
+  .sr-note-entry {
+    background: rgba(255,255,255,0.03);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 13px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .sr-note-entry.sr-active {
+    border-color: rgba(195,222,232,0.5);
+    background: rgba(195,222,232,0.06);
+  }
+
+  .sr-note-entry.sr-correct {
+    border-color: rgba(91,200,122,0.45);
+    background: rgba(91,200,122,0.08);
+  }
+
+  .sr-note-entry.sr-wrong {
+    border-color: rgba(255,107,107,0.45);
+    background: rgba(255,107,107,0.08);
+  }
+
+  .sr-note-display {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    min-height: 26px;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+
+  .sr-note-display.sr-placeholder {
+    color: rgba(255,255,255,0.15);
+    font-weight: 400;
+    font-size: 1rem;
+    padding-top: 4px;
+  }
+
+  .sr-note-sublabel {
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 3px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+
+  .sr-note-sublabel.sr-hint { color: var(--accent); }
+
+  .sr-kbd-guide {
+    border-top: 0.5px solid var(--border);
+    padding-top: 12px;
+  }
+
+  .sr-kbd-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .sr-kbd-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .sr-kbd {
+    display: inline-block;
+    background: rgba(255,255,255,0.06);
+    border: 0.5px solid var(--border-strong);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-width: 20px;
+    text-align: center;
+    letter-spacing: 0;
+  }
+
+  .sr-streak-block { display: flex; align-items: baseline; gap: 6px; }
+
+  .sr-streak-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .sr-streak-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .sr-feedback {
+    font-size: 0.75rem;
+    min-height: 16px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+  .sr-feedback.sr-correct { color: var(--fc-green); }
+  .sr-feedback.sr-wrong   { color: var(--red); }
+
+  /* ── Quiz page extras ── */
+  #page-quiz {
+    font-family: 'DM Mono', monospace;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 64px;
+  }
+  #page-quiz.active { display: flex; }
+
+  #quizCard {
+    width: 100%;
+    max-width: 680px;
+    background: var(--fc-surface);
+    border: 1px solid var(--fc-border);
+    border-radius: 18px;
+    padding: 36px 32px 28px;
+    min-height: 200px;
+  }
+
+  .quiz-question {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: var(--text);
+    margin-bottom: 22px;
+    line-height: 1.3;
+  }
+
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .quiz-option-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    background: var(--fc-surface2);
+    border: 1px solid var(--fc-border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .quiz-option-btn:hover { border-color: var(--fc-accent2); }
+  .quiz-option-btn.selected { border-color: var(--fc-accent); background: rgba(195,222,232,0.1); }
+  .quiz-option-btn.correct { border-color: var(--fc-green); background: #1b2e21; }
+  .quiz-option-btn.incorrect { border-color: var(--fc-red); background: #2e1b1b; }
+
+  .opt-letter {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    color: var(--fc-accent);
+    min-width: 18px;
+  }
+
+  #quizCompletionScreen {
+    width: 100%;
+    max-width: 680px;
+    background: var(--fc-surface);
+    border: 1px solid var(--fc-accent);
+    border-radius: 18px;
+    padding: 48px 32px;
+    text-align: center;
+  }
+  #quizCompletionScreen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    color: var(--fc-accent);
+    margin-bottom: 10px;
+  }
+  #quizCompletionScreen p { color: var(--fc-muted); font-size: 0.85rem; margin-bottom: 24px; font-family: 'Space Mono', monospace; }
+
+  .mastered-row { opacity: 0.5; }
+  
+</style>
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav class="app-nav">
+  <span class="nav-brand">// Dietz</span>
+  <button class="nav-tab active" onclick="switchPage('tracker')" id="tab-tracker">Revision Tracker</button>
+  <button class="nav-tab" onclick="switchPage('flashcard')" id="tab-flashcard">Word Checker</button>
+  <button class="nav-tab" onclick="switchPage('sight')" id="tab-sight">Sight Reading</button>
+  <button class="nav-tab" onclick="switchPage('quiz')" id="tab-quiz">MCQ Quiz</button>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE 1 — REVISION TRACKER
+════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-tracker">
+
+  <header class="tracker-header">
+    <div class="header-left">
+      <h1>Revision Tracker</h1>
+      <p id="today-date"></p>
+    </div>
+    <div class="header-btns">
+      <button class="copy-btn" id="copy-excel-btn" onclick="copyToExcel()">
+        <span id="copy-icon">⎘</span>
+        <span id="copy-label">Copy for Excel</span>
+      </button>
+      <button class="config-btn" onclick="openSubjects()">✎ Subjects</button>
+    </div>
+  </header>
+
+  <div class="today-total">
+    <span>Today's total</span>
+    <span class="total-time mono" id="total-display">00:00:00</span>
+  </div>
+
+  <p class="section-label">Subjects</p>
+  <div class="subjects-grid" id="subjects-grid"></div>
+
+  <div id="log-section" style="display:none;">
+    <p class="section-label" style="margin-top:1.5rem;">Session log</p>
+    <div class="log-list" id="log-list"></div>
+  </div>
+
+  <!-- Subject manager modal -->
+  <div class="modal-overlay" id="subjects-modal">
+    <div class="modal">
+      <h2>// Manage Subjects</h2>
+      <div class="subject-list" id="subject-list"></div>
+      <button class="btn-add-subject" onclick="addSubjectRow()">+ Add subject</button>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeSubjects()">Cancel</button>
+        <button class="btn-save" onclick="saveSubjects()">Save</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-tracker -->
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE 2 — WORD CHECKER / FLASHCARDS
+════════════════════════════════════════════════════════ -->
+<div class="page" id="page-flashcard">
+
+  <header class="fc-header">
+    <h1>Flashcards<span>Choose # correct and mode</span></h1>
+    <div class="controls-row">
+      <label class="file-label" for="fileInput">
+        ⬆ Upload .xlsx
+        <input type="file" id="fileInput" accept=".xlsx">
+      </label>
+      <button id="randomiseBtn" class="small-btn" title="Shuffle card order">🔀 Randomise</button>
+      <button id="twoPartBtn" title="Require both parts of the definition (split by ; or /)">✦ 2-Part Mode</button>
+      <div style="display:inline-flex; align-items:center; gap:6px; color:var(--fc-muted); font-size:0.72rem; font-family:'Space Mono',monospace;">
+        <label style="display:inline-flex; align-items:center; gap:6px; color:var(--fc-muted); font-family:'Space Mono',monospace;">
+          <input type="radio" name="repeatChoice" id="repeat1" value="1"> 1
+        </label>
+        <label style="display:inline-flex; align-items:center; gap:6px; color:var(--fc-muted); font-family:'Space Mono',monospace;">
+          <input type="radio" name="repeatChoice" id="repeat5" value="5" checked> 5
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-box"><div class="val" id="statRemaining">—</div><div class="lbl">Remaining</div></div>
+    <div class="stat-box"><div class="val" id="statDone">0</div><div class="lbl">Mastered</div></div>
+    <div class="stat-box"><div class="val" id="statCorrect">0</div><div class="lbl">Correct</div></div>
+    <div class="stat-box"><div class="val" id="statWrong">0</div><div class="lbl">Wrong</div></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-labels"><span id="progressLabel">Upload a file to begin</span><span id="progressPct"></span></div>
+  </div>
+
+  <div class="window-indicator" id="windowIndicator" style="display:none;">
+    <span class="dot"></span>
+    <span id="windowLabel">Window: cards 1–5</span>
+  </div>
+
+  <div class="two-part-banner" id="twoPartBanner">
+    ✦ 2-Part Mode active — definitions split by <code style="background:#2e2040;padding:1px 5px;border-radius:4px;">;</code> or <code style="background:#2e2040;padding:1px 5px;border-radius:4px;">/</code> — fill in both parts to score
+  </div>
+
+  <div id="flashcard">
+    <div class="empty-state">
+      <div class="icon">📂</div>
+      <p>Upload your Excel file to start practising.<br>Each word needs 5 correct answers to be mastered.</p>
+    </div>
+  </div>
+
+  <div id="completionScreen">
+    <h2>Complete! 🎉</h2>
+    <p>You've completed every word with the selected correct-count requirement each.</p>
+    <button class="btn" onclick="restartAll()">Start Over</button>
+  </div>
+
+  <div class="card-actions" id="cardActions" style="display:none;">
+    <button class="btn secondary" onclick="toggleWordList()">Word List</button>
+    <button class="btn" onclick="startGame()">▶ Start / Restart</button>
+  </div>
+
+  <div class="table-wrap" id="tableWrap">
+    <table id="wordListTable"></table>
+  </div>
+
+</div><!-- /page-flashcard -->
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE 3 — SIGHT READING
+════════════════════════════════════════════════════════ -->
+<div class="page" id="page-sight">
+
+  <header class="sr-header">
+    <h1>Sight Reading</h1>
+    <p>Identify the note(s) shown on the staff</p>
+  </header>
+
+  <div class="sr-settings-row">
+    <div class="sr-setting-group">
+      <div class="sr-setting-label">Notes in chord</div>
+      <select id="set-a">
+        <option value="1" selected>1 note</option>
+        <option value="2">2 notes</option>
+        <option value="3">3 notes</option>
+        <option value="4">4 notes</option>
+      </select>
+    </div>
+    <div class="sr-setting-group">
+      <div class="sr-setting-label">Clef</div>
+      <select id="set-b">
+        <option value="treble">Treble</option>
+        <option value="bass">Bass</option>
+        <option value="random" selected>Randomise</option>
+      </select>
+    </div>
+    <div class="sr-setting-group">
+      <div class="sr-setting-label">Key</div>
+      <select id="set-c">
+        <option value="Cs" selected>C# minor</option>
+        <option value="C">C minor</option>
+        <option value="D">D minor</option>
+        <option value="G">G minor</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="sr-main-area">
+    <div class="sr-staff-wrap">
+      <canvas id="staff-canvas"></canvas>
+    </div>
+    <div class="sr-input-panel">
+      <div>
+        <div class="sr-section-label">Your answer</div>
+        <div id="sr-note-entries"></div>
+      </div>
+      <div class="sr-kbd-guide">
+        <div class="sr-section-label">Keys</div>
+        <div class="sr-kbd-row">
+          <div class="sr-kbd-item"><span class="sr-kbd">A</span>–<span class="sr-kbd">G</span><span style="margin-left:2px;">note</span></div>
+        </div>
+        <div class="sr-kbd-row">
+          <div class="sr-kbd-item"><span class="sr-kbd">1</span><span>♭</span></div>
+          <div class="sr-kbd-item"><span class="sr-kbd">2</span><span>♮</span></div>
+          <div class="sr-kbd-item"><span class="sr-kbd">3</span><span>♯</span></div>
+        </div>
+        <div class="sr-kbd-row">
+          <div class="sr-kbd-item"><span class="sr-kbd">↵</span><span>confirm</span></div>
+          <div class="sr-kbd-item"><span class="sr-kbd">⌫</span><span>clear</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="sr-streak-block">
+          <span class="sr-streak-num" id="sr-streak-val">0</span>
+          <span class="sr-streak-label">streak</span>
+        </div>
+        <div class="sr-feedback" id="sr-feedback"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-sight -->
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE 4 — MCQ QUIZ
+════════════════════════════════════════════════════════ -->
+<div class="page" id="page-quiz">
+  <header class="fc-header">
+    <h1>Quiz<span>Choose # correct and mode</span></h1>
+    <div class="controls-row">
+      <label class="file-label" for="quizFileInput">
+        ⬆ Upload .xlsx
+        <input type="file" id="quizFileInput" accept=".xlsx">
+      </label>
+      <button id="quizRandomiseBtn" class="small-btn" title="Shuffle question order">🔀 Randomise</button>
+      <div style="display:inline-flex; align-items:center; gap:6px; color:var(--fc-muted); font-size:0.72rem; font-family:'Space Mono',monospace;">
+        <label style="display:inline-flex; align-items:center; gap:6px; color:var(--fc-muted); font-family:'Space Mono',monospace;">
+          <input type="radio" name="quizRepeatChoice" id="quizRepeat1" value="1"> 1
+        </label>
+        <label style="display:inline-flex; align-items:center; gap:6px; color:var(--fc-muted); font-family:'Space Mono',monospace;">
+          <input type="radio" name="quizRepeatChoice" id="quizRepeat3" value="3"> 3
+        </label>
+        <label style="display:inline-flex; align-items:center; gap:6px; color:var(--fc-muted); font-family:'Space Mono',monospace;">
+          <input type="radio" name="quizRepeatChoice" id="quizRepeat5" value="5" checked> 5
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-box"><div class="val" id="quizStatRemaining">—</div><div class="lbl">Remaining</div></div>
+    <div class="stat-box"><div class="val" id="quizStatDone">0</div><div class="lbl">Mastered</div></div>
+    <div class="stat-box"><div class="val" id="quizStatCorrect">0</div><div class="lbl">Correct</div></div>
+    <div class="stat-box"><div class="val" id="quizStatWrong">0</div><div class="lbl">Wrong</div></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="quizProgressFill"></div></div>
+    <div class="progress-labels"><span id="quizProgressLabel">Upload a file to begin</span><span id="quizProgressPct"></span></div>
+  </div>
+
+  <div id="quizCard">
+    <div class="empty-state">
+      <div class="icon">📂</div>
+      <p>Upload your Excel file to start the quiz.<br>Each question needs the selected correct-count to be mastered.</p>
+    </div>
+  </div>
+
+  <div id="quizCompletionScreen" style="display:none;">
+    <h2>Complete! 🎉</h2>
+    <p>You've answered every question correctly the required number of times.</p>
+    <button class="btn" onclick="restartQuiz()">Start Over</button>
+  </div>
+
+  <div class="card-actions" id="quizCardActions" style="display:none;">
+    <button class="btn secondary" onclick="toggleQuizList()">Question List</button>
+    <button class="btn" onclick="startQuiz()">▶ Start / Restart</button>
+  </div>
+
+  <div class="table-wrap" id="quizTableWrap">
+    <table id="quizListTable"></table>
+  </div>
+</div><!-- /page-quiz -->
+
+<div class="toast" id="toast"></div>
+
+<!-- XLSX for flashcard page -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.0/dist/xlsx.full.min.js"></script>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   PAGE SWITCHING
+══════════════════════════════════════════════════════════ */
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'sight') {
+    initCanvas();
+    srDraw();
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   REVISION TRACKER
+══════════════════════════════════════════════════════════ */
+const COLORS = ['#c3dee8'];
+
+const DEFAULT_SUBJECTS = [
+  { name: 'MATH 231' }, { name: 'CS 101' }, { name: 'AE 100' },
+  { name: 'ENG 100' }, { name: 'TE 200' }, { name: 'dum 1' },
+  { name: 'dum 2' }
+];
+
+function loadSubjects() {
+  const saved = localStorage.getItem('rt_subjects');
+  return saved ? JSON.parse(saved) : DEFAULT_SUBJECTS;
+}
+function saveSubjectData(list) { localStorage.setItem('rt_subjects', JSON.stringify(list)); }
+
+let SUBJECTS = loadSubjects();
+
+const state = {
+  timers: [],
+  config: JSON.parse(localStorage.getItem('rt_config') || 'null'),
+  logs: [],
+  tick: null,
+};
+
+function initTimers() {
+  state.timers = SUBJECTS.map(() => ({ running: false, elapsed: 0, startedAt: null, todayTotal: 0 }));
+}
+
+function colorFor(i) { return COLORS[i % COLORS.length]; }
+
+function buildGrid() {
+  const grid = document.getElementById('subjects-grid');
+  grid.innerHTML = '';
+  SUBJECTS.forEach((s, i) => {
+    const color = colorFor(i);
+    const card = document.createElement('div');
+    card.className = 'subject-card';
+    card.id = `card-${i}`;
+    card.style.setProperty('--subject-color', color);
+    card.innerHTML = `
+      <div class="subject-header">
+        <span class="subject-name">${s.name}</span>
+        <button class="btn-edit-subject" onclick="openSubjects()" title="Edit subjects">✎</button>
+      </div>
+      <div class="timer-display mono" id="timer-${i}">00:00:00</div>
+      <div class="session-info">today &mdash; <span id="today-${i}">00:00:00</span></div>
+      <div class="card-footer">
+        <button class="btn-timer btn-start" id="btn-${i}" onclick="toggleTimer(${i})">▶ Start</button>
+        <button class="btn-log" id="log-${i}" onclick="logSession(${i})" disabled>↑ Log</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function toggleTimer(i) {
+  const t = state.timers[i];
+  if (!t.running) {
+    state.timers.forEach((ot, oi) => { if (oi !== i && ot.running) stopTimer(oi); });
+    t.running = true;
+    t.startedAt = Date.now() - t.elapsed;
+    document.getElementById(`card-${i}`).classList.add('active');
+    document.getElementById(`btn-${i}`).textContent = '■ Stop';
+    document.getElementById(`btn-${i}`).className = 'btn-timer btn-stop';
+    if (!state.tick) state.tick = setInterval(tick, 500);
+  } else {
+    stopTimer(i);
+  }
+}
+
+function stopTimer(i) {
+  const t = state.timers[i];
+  if (!t.running) return;
+  t.elapsed = Date.now() - t.startedAt;
+  t.running = false;
+  document.getElementById(`card-${i}`).classList.remove('active');
+  document.getElementById(`btn-${i}`).textContent = '▶ Start';
+  document.getElementById(`btn-${i}`).className = 'btn-timer btn-start';
+  document.getElementById(`log-${i}`).disabled = false;
+  const anyRunning = state.timers.some(t => t.running);
+  if (!anyRunning && state.tick) { clearInterval(state.tick); state.tick = null; }
+}
+
+function tick() {
+  let total = 0;
+  state.timers.forEach((t, i) => {
+    const elapsed = t.running ? Date.now() - t.startedAt : t.elapsed;
+    const el = document.getElementById(`timer-${i}`);
+    if (el) el.textContent = fmtTime(elapsed);
+    total += (t.todayTotal || 0) + elapsed;
+  });
+  document.getElementById('total-display').textContent = fmtTime(total);
+}
+
+async function logSession(i) {
+  const t = state.timers[i];
+  if (t.elapsed < 1000) { showToast('No time to log!', 'error'); return; }
+  const subject = SUBJECTS[i].name;
+  const date = todayISO();
+  const time = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+  const duration = fmtTime(t.elapsed);
+  addLog(subject, t.elapsed, date, time);
+  t.todayTotal = (t.todayTotal || 0) + t.elapsed;
+  t.elapsed = 0;
+  t.startedAt = null;
+  document.getElementById(`timer-${i}`).textContent = '00:00:00';
+  document.getElementById(`today-${i}`).textContent = fmtTime(t.todayTotal);
+  document.getElementById(`log-${i}`).disabled = true;
+  tick();
+}
+
+function addLog(subject, ms, date, time) {
+  state.logs.unshift({ subject, ms, date, time });
+  const list = document.getElementById('log-list');
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  item.innerHTML = `<span><strong>${subject}</strong> &mdash; ${fmtTime(ms)}</span><span>${date} ${time}</span>`;
+  list.prepend(item);
+  document.getElementById('log-section').style.display = 'block';
+}
+
+function copyToExcel() {
+  const date = todayISO();
+  const values = SUBJECTS.map((s, i) => {
+    const t = state.timers[i];
+    const currentElapsed = t.running ? Date.now() - t.startedAt : t.elapsed;
+    const totalMs = (t.todayTotal || 0) + currentElapsed;
+    return totalMs > 0 ? parseFloat((totalMs / 3600000).toFixed(4)) : 0;
+  });
+  const grandTotalMs = state.timers.reduce((sum, t) => {
+    const currentElapsed = t.running ? Date.now() - t.startedAt : t.elapsed;
+    return sum + (t.todayTotal || 0) + currentElapsed;
+  }, 0);
+  const totalHours = parseFloat((grandTotalMs / 3600000).toFixed(4));
+  const row = [date, totalHours, ...values];
+  const tsv = row.join('\t');
+  navigator.clipboard.writeText(tsv).then(() => {
+    const btn = document.getElementById('copy-excel-btn');
+    const label = document.getElementById('copy-label');
+    btn.classList.add('copied');
+    label.textContent = 'Copied!';
+    showToast('Copied — paste into Excel!', 'success');
+    setTimeout(() => { btn.classList.remove('copied'); label.textContent = 'Copy for Excel'; }, 2500);
+  }).catch(() => { showToast('Copy failed — try again', 'error'); });
+}
+
+let editBuffer = [];
+
+function openSubjects() {
+  editBuffer = SUBJECTS.map(s => ({ ...s }));
+  renderSubjectList();
+  document.getElementById('subjects-modal').classList.add('open');
+}
+function closeSubjects() { document.getElementById('subjects-modal').classList.remove('open'); }
+
+function renderSubjectList() {
+  const list = document.getElementById('subject-list');
+  list.innerHTML = '';
+  editBuffer.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'subject-list-item';
+    row.innerHTML = `
+      <div class="color-dot" style="background:${colorFor(i)}"></div>
+      <input type="text" value="${s.name}" placeholder="Subject name"
+        oninput="editBuffer[${i}].name = this.value">
+      <button class="btn-delete" onclick="removeSubjectRow(${i})" title="Remove">✕</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function addSubjectRow() {
+  editBuffer.push({ name: '' });
+  renderSubjectList();
+  const inputs = document.querySelectorAll('#subject-list input');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+function removeSubjectRow(i) { editBuffer.splice(i, 1); renderSubjectList(); }
+
+function saveSubjects() {
+  const cleaned = editBuffer.map(s => ({ name: s.name.trim() })).filter(s => s.name);
+  if (!cleaned.length) { showToast('Add at least one subject', 'error'); return; }
+  state.timers.forEach((_, i) => { if (state.timers[i].running) stopTimer(i); });
+  SUBJECTS = cleaned;
+  saveSubjectData(SUBJECTS);
+  initTimers();
+  buildGrid();
+  closeSubjects();
+  showToast('Subjects saved!', 'success');
+}
+
+function fmtTime(ms) {
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+function fmtHours(ms) { return (ms / 3600000).toFixed(4); }
+
+function todayStr() {
+  return new Date().toLocaleDateString('en-GB', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+}
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+let toastTimer;
+function showToast(msg, type='') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.className = 'toast'; }, 3000);
+}
+
+function initTracker() {
+  document.getElementById('today-date').textContent = todayStr();
+  initTimers();
+  buildGrid();
+  setInterval(() => { if (state.timers.some(t => t.running)) tick(); }, 1000);
+}
+
+/* ══════════════════════════════════════════════════════════
+   FLASHCARD / WORD CHECKER
+══════════════════════════════════════════════════════════ */
+let REQUIRED_CORRECT = 5;
+const WINDOW_SIZE = 5;
+let twoPartMode = false;
+let allCards = [];
+let windowStart = 0;
+let currentCard = null;
+let wrongShown = false;
+let totalCorrect = 0;
+let totalWrong = 0;
+let part1Correct = false;
+let part2Correct = false;
+
+const fileInput = document.getElementById('fileInput');
+const flashcardDiv = document.getElementById('flashcard');
+const completionScreen = document.getElementById('completionScreen');
+const cardActions = document.getElementById('cardActions');
+const tableWrap = document.getElementById('tableWrap');
+const wordListTable = document.getElementById('wordListTable');
+const randomiseBtn = document.getElementById('randomiseBtn');
+const twoPartBtn = document.getElementById('twoPartBtn');
+const twoPartBanner = document.getElementById('twoPartBanner');
+const repeat1 = document.getElementById('repeat1');
+const repeat5 = document.getElementById('repeat5');
+
+fileInput.addEventListener('change', handleFile);
+randomiseBtn.addEventListener('click', handleRandomise);
+repeat1.addEventListener('change', onRepeatChange);
+repeat5.addEventListener('change', onRepeatChange);
+twoPartBtn.addEventListener('click', toggleTwoPartMode);
+
+function toggleTwoPartMode() {
+  twoPartMode = !twoPartMode;
+  twoPartBtn.classList.toggle('active', twoPartMode);
+  twoPartBanner.classList.toggle('visible', twoPartMode);
+  if (currentCard) { wrongShown = false; part1Correct = false; part2Correct = false; renderCard(); }
+}
+
+function splitDefinition(def) {
+  const bySemi = def.split(';');
+  if (bySemi.length >= 2) return [bySemi[0].trim(), bySemi.slice(1).join(';').trim()];
+  const bySlash = def.split('/');
+  if (bySlash.length >= 2) return [bySlash[0].trim(), bySlash.slice(1).join('/').trim()];
+  return [def.trim()];
+}
+
+function onRepeatChange() {
+  const val = document.querySelector('input[name="repeatChoice"]:checked').value;
+  REQUIRED_CORRECT = parseInt(val, 10) || 5;
+  document.querySelector('.fc-header h1 span').textContent = `${REQUIRED_CORRECT} correct = mastered`;
+  renderWordList();
+  updateStats();
+}
+
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const data = new Uint8Array(ev.target.result);
+    const wb = XLSX.read(data, { type: 'array' });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    buildCards(json);
+    renderWordList();
+    cardActions.style.display = 'flex';
+    startGame();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function buildCards(data) {
+  allCards = [];
+  windowStart = 0;
+  totalCorrect = 0;
+  totalWrong = 0;
+  const rows = data.slice(1);
+  let idCounter = 1;
+  for (let row of rows) {
+    if (row[0] && row[1]) {
+      allCards.push({ id: idCounter++, phrase: String(row[0]), definition: String(row[1]), correctCount: 0, done: false });
+    }
+  }
+  updateStats();
+}
+
+function shuffleInPlace(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function handleRandomise() {
+  if (allCards.length === 0) return;
+  shuffleInPlace(allCards);
+  windowStart = 0;
+  nextCard();
+  renderWordList();
+  updateStats();
+  randomiseBtn.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 220 });
+}
+
+function startGame() {
+  if (allCards.length === 0) { alert('Upload an Excel file first (with columns: Word, Definition).'); return; }
+  windowStart = 0;
+  allCards.forEach(c => { c.correctCount = 0; c.done = false; });
+  totalCorrect = 0;
+  totalWrong = 0;
+  completionScreen.style.display = 'none';
+  flashcardDiv.style.display = 'block';
+  updateStats();
+  nextCard();
+}
+
+function advanceWindow() {
+  while (windowStart < allCards.length) {
+    const end = Math.min(windowStart + WINDOW_SIZE, allCards.length);
+    const windowSlice = allCards.slice(windowStart, end);
+    const anyActive = windowSlice.some(c => !c.done);
+    if (anyActive) break;
+    windowStart += WINDOW_SIZE;
+  }
+}
+
+function getActiveWindowCards() {
+  advanceWindow();
+  const end = Math.min(windowStart + WINDOW_SIZE, allCards.length);
+  return allCards.slice(windowStart, end).filter(c => !c.done);
+}
+
+function nextCard() {
+  const activePool = getActiveWindowCards();
+  if (activePool.length === 0) {
+    if (windowStart + WINDOW_SIZE < allCards.length) { windowStart += WINDOW_SIZE; nextCard(); }
+    else {
+      if (allCards.every(c => c.done)) showCompletion();
+      else { if (windowStart >= allCards.length) windowStart = 0; advanceWindow(); nextCard(); }
+    }
+    return;
+  }
+  const randomIndex = Math.floor(Math.random() * activePool.length);
+  currentCard = activePool[randomIndex];
+  wrongShown = false;
+  part1Correct = false;
+  part2Correct = false;
+  renderCard();
+  updateStats();
+  updateWindowIndicator();
+  renderWordList();
+}
+
+function renderCard() {
+  if (!currentCard) return;
+  const fc = flashcardDiv;
+  fc.className = '';
+  fc.style.display = 'block';
+
+  const remainingAttempts = REQUIRED_CORRECT - currentCard.correctCount;
+  const livesHtml = Array.from({ length: REQUIRED_CORRECT }, (_, i) => {
+    const isCompleted = i < currentCard.correctCount;
+    return `<span class="life${isCompleted ? ' dead' : ''}" style="opacity:${isCompleted ? 0.35 : 1}">★</span>`;
+  }).join('');
+
+  const parts = twoPartMode ? splitDefinition(currentCard.definition) : null;
+  const isTrulyTwoPart = parts && parts.length === 2;
+
+  let inputHtml;
+  if (isTrulyTwoPart) {
+    const p1Class = part1Correct ? 'input-correct' : '';
+    const p2Class = part2Correct ? 'input-correct' : '';
+    inputHtml = `
+      <div class="two-part-inputs">
+        <div class="two-part-input-group">
+          <span class="two-part-label">Part 1</span>
+          <input type="text" id="defGuess1" class="${p1Class}" placeholder="First part of definition…" autocomplete="off"
+            ${part1Correct ? 'readonly' : ''}
+            onkeydown="if(event.key==='Enter') checkAnswer()">
+          <span class="part-status">${part1Correct ? '✓' : ''}</span>
+        </div>
+        <div class="two-part-input-group">
+          <span class="two-part-label">Part 2</span>
+          <input type="text" id="defGuess2" class="${p2Class}" placeholder="Second part of definition…" autocomplete="off"
+            ${part2Correct ? 'readonly' : ''}
+            onkeydown="if(event.key==='Enter') checkAnswer()">
+          <span class="part-status">${part2Correct ? '✓' : ''}</span>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-bottom:14px;">
+        <button class="btn" onclick="checkAnswer()">Check</button>
+        <span style="font-size:0.7rem; color:var(--fc-muted); align-self:center; letter-spacing:0.05em; font-family:'Space Mono',monospace;">Both parts must be correct</span>
+      </div>`;
+  } else {
+    inputHtml = `
+      <div class="input-row">
+        <input type="text" id="defGuess" placeholder="Enter definition…" autocomplete="off"
+               onkeydown="if(event.key==='Enter') checkAnswer()">
+        <button class="btn" onclick="checkAnswer()">Check</button>
+      </div>`;
+  }
+
+  const modeBadgeSuffix = isTrulyTwoPart ? ' · ✦ 2-part' : (twoPartMode ? ' · (no split found)' : '');
+
+  fc.innerHTML = `
+    <div class="word-badge">Word → Definition (${remainingAttempts} more correct to master${modeBadgeSuffix})</div>
+    <div class="phrase-text">${escHtml(currentCard.phrase)}</div>
+    <div class="lives-row">
+      ${livesHtml}
+      <span style="margin-left:8px">${currentCard.correctCount} / ${REQUIRED_CORRECT} correct</span>
+    </div>
+    ${inputHtml}
+    <div class="feedback-msg" id="feedbackMsg"></div>
+  `;
+
+  const firstInput = fc.querySelector('input[type="text"]:not([readonly])');
+  if (firstInput) firstInput.focus();
+}
+
+function checkAnswer() {
+  if (!currentCard) return;
+  const fc = flashcardDiv;
+  const msgDiv = document.getElementById('feedbackMsg');
+  const parts = twoPartMode ? splitDefinition(currentCard.definition) : null;
+  const isTrulyTwoPart = parts && parts.length === 2;
+
+  if (isTrulyTwoPart) {
+    const input1 = document.getElementById('defGuess1');
+    const input2 = document.getElementById('defGuess2');
+    if (!input1 || !input2) return;
+
+    if (!part1Correct) {
+      const val1 = input1.value.trim();
+      if (val1.toLowerCase() === parts[0].toLowerCase()) {
+        part1Correct = true; input1.classList.add('input-correct'); input1.readOnly = true;
+      } else if (val1.length > 0) {
+        input1.classList.add('input-wrong'); setTimeout(() => input1.classList.remove('input-wrong'), 600);
+      }
+    }
+
+    if (!part2Correct) {
+      const val2 = input2.value.trim();
+      if (val2.toLowerCase() === parts[1].toLowerCase()) {
+        part2Correct = true; input2.classList.add('input-correct'); input2.readOnly = true;
+      } else if (val2.length > 0) {
+        input2.classList.add('input-wrong'); setTimeout(() => input2.classList.remove('input-wrong'), 600);
+      }
+    }
+
+    if (part1Correct && part2Correct) {
+      totalCorrect++;
+      if (currentCard.correctCount < REQUIRED_CORRECT) currentCard.correctCount++;
+      if (currentCard.correctCount >= REQUIRED_CORRECT) currentCard.done = true;
+      fc.className = 'correct';
+      if (msgDiv) { msgDiv.className = 'feedback-msg ok'; msgDiv.textContent = `✓ Both parts correct! (${currentCard.correctCount}/${REQUIRED_CORRECT} correct)`; }
+      const existingReveal = fc.querySelector('.answer-reveal');
+      if (existingReveal) existingReveal.remove();
+      setTimeout(() => { fc.className = ''; nextCard(); }, 900);
+    } else if (part1Correct || part2Correct) {
+      fc.className = 'partial';
+      const doneCount = (part1Correct ? 1 : 0) + (part2Correct ? 1 : 0);
+      if (msgDiv) { msgDiv.className = 'feedback-msg partial'; msgDiv.textContent = `✦ ${doneCount}/2 parts correct — keep going!`; }
+      if (!part1Correct && document.getElementById('defGuess1')) document.getElementById('defGuess1').focus();
+      else if (!part2Correct && document.getElementById('defGuess2')) document.getElementById('defGuess2').focus();
+    } else {
+      totalWrong++;
+      fc.className = 'wrong';
+      if (msgDiv) { msgDiv.className = 'feedback-msg bad'; msgDiv.textContent = `✗ Try again — both parts needed.`; }
+      if (!wrongShown) {
+        wrongShown = true;
+        const reveal = document.createElement('div');
+        reveal.className = 'answer-reveal partial-reveal';
+        reveal.innerHTML = `<strong>Correct answers:</strong> Part 1: ${escHtml(parts[0])} &nbsp;|&nbsp; Part 2: ${escHtml(parts[1])}`;
+        fc.appendChild(reveal);
+        setTimeout(() => { if (reveal && reveal.parentNode) reveal.remove(); }, 2500);
+      }
+      setTimeout(() => { fc.className = part1Correct || part2Correct ? 'partial' : ''; }, 700);
+    }
+  } else {
+    const input = document.getElementById('defGuess');
+    if (!input) return;
+    const userAnswer = input.value.trim();
+    const correctAnswer = currentCard.definition;
+
+    if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+      totalCorrect++;
+      if (currentCard.correctCount < REQUIRED_CORRECT) currentCard.correctCount++;
+      if (currentCard.correctCount >= REQUIRED_CORRECT) currentCard.done = true;
+      fc.className = 'correct';
+      if (msgDiv) { msgDiv.className = 'feedback-msg ok'; msgDiv.textContent = `✓ Correct! (${currentCard.correctCount}/${REQUIRED_CORRECT} correct)`; }
+      input.value = '';
+      const existingReveal = fc.querySelector('.answer-reveal');
+      if (existingReveal) existingReveal.remove();
+      setTimeout(() => { fc.className = ''; nextCard(); }, 800);
+    } else {
+      totalWrong++;
+      fc.className = 'wrong';
+      if (msgDiv) { msgDiv.className = 'feedback-msg bad'; msgDiv.textContent = `✗ Try again.`; }
+      if (!wrongShown) {
+        wrongShown = true;
+        const reveal = document.createElement('div');
+        reveal.className = 'answer-reveal';
+        reveal.innerHTML = `<strong>Correct answer:</strong> ${escHtml(correctAnswer)}`;
+        fc.appendChild(reveal);
+        setTimeout(() => { if (reveal && reveal.parentNode) reveal.remove(); }, 2000);
+      }
+      input.value = '';
+      setTimeout(() => { fc.className = ''; }, 700);
+    }
+  }
+  updateStats();
+  renderWordList();
+}
+
+function updateStats() {
+  const remaining = allCards.filter(c => !c.done).length;
+  const mastered = allCards.filter(c => c.done).length;
+  const total = allCards.length;
+  document.getElementById('statRemaining').textContent = total > 0 ? remaining : '—';
+  document.getElementById('statDone').textContent = mastered;
+  document.getElementById('statCorrect').textContent = totalCorrect;
+  document.getElementById('statWrong').textContent = totalWrong;
+  const pct = total > 0 ? Math.round((mastered / total) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = total > 0 ? `${mastered} of ${total} mastered (${REQUIRED_CORRECT} correct each)` : 'Upload a file to begin';
+  document.getElementById('progressPct').textContent = total > 0 ? pct + '%' : '';
+}
+
+function updateWindowIndicator() {
+  const el = document.getElementById('windowIndicator');
+  const lbl = document.getElementById('windowLabel');
+  if (!el || !lbl) return;
+  el.style.display = 'flex';
+  const end = Math.min(windowStart + WINDOW_SIZE, allCards.length);
+  lbl.textContent = `Active window: cards ${windowStart + 1}–${end} of ${allCards.length} (${REQUIRED_CORRECT} correct = mastered)`;
+}
+
+function showCompletion() {
+  flashcardDiv.style.display = 'none';
+  completionScreen.style.display = 'block';
+  updateStats();
+}
+
+function restartAll() {
+  allCards.forEach(c => { c.correctCount = 0; c.done = false; });
+  windowStart = 0; totalCorrect = 0; totalWrong = 0;
+  completionScreen.style.display = 'none';
+  flashcardDiv.style.display = 'block';
+  updateStats();
+  nextCard();
+}
+
+function toggleWordList() {
+  if (!tableWrap) return;
+  tableWrap.style.display = tableWrap.style.display === 'none' ? 'block' : 'none';
+}
+
+function renderWordList() {
+  if (!wordListTable) return;
+  if (allCards.length === 0) { wordListTable.innerHTML = ''; return; }
+  const rowsHtml = allCards.map((card, idx) => {
+    const pips = [];
+    for (let i = 0; i < REQUIRED_CORRECT; i++) {
+      if (card.done) pips.push(`<span class="pip done"></span>`);
+      else if (i < card.correctCount) pips.push(`<span class="pip active"></span>`);
+      else pips.push(`<span class="pip"></span>`);
+    }
+    const pipContainer = `<div class="badge-lives">${pips.join('')}</div>`;
+    const rowStyle = card.done ? 'opacity:0.5' : (currentCard === card ? 'background:var(--fc-surface2)' : '');
+    const parts = splitDefinition(card.definition);
+    let defDisplay = escHtml(card.definition);
+    if (twoPartMode && parts.length === 2) {
+      defDisplay = `<span style="color:var(--fc-purple)">${escHtml(parts[0])}</span> <span style="color:var(--fc-muted)">·</span> <span style="color:var(--fc-accent2)">${escHtml(parts[1])}</span>`;
+    }
+    return `<tr style="${rowStyle}">
+      <td style="color:var(--fc-muted);font-size:0.7rem">${idx + 1}</td>
+      <td style="font-weight:500;">${escHtml(card.phrase)}</td>
+      <td style="color:var(--fc-muted)">${defDisplay}</td>
+      <td>${pipContainer} <span style="font-size:0.65rem; margin-left:6px;">${card.correctCount}/${REQUIRED_CORRECT}</span></td>
+    </tr>`;
+  }).join('');
+  wordListTable.innerHTML = `
+    <thead><tr>
+      <th>#</th><th>Word</th>
+      <th>Definition${twoPartMode ? ' (Part 1 · Part 2)' : ''}</th>
+      <th>Progress (${REQUIRED_CORRECT}✔️)</th>
+    </tr></thead>
+    <tbody>${rowsHtml}</tbody>
+  `;
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+window.checkAnswer = checkAnswer;
+window.startGame = startGame;
+window.toggleWordList = toggleWordList;
+window.restartAll = restartAll;
+
+/* ══════════════════════════════════════════════════════════
+   SIGHT READING
+══════════════════════════════════════════════════════════ */
+const KEY_SIGS = {
+  //           key sig notes only — accidentals are assigned by srGenNotes
+  C:  { name: 'C minor',  flats: ['B','E','A'], sharps: [] },
+  D:  { name: 'D minor',  flats: ['B'],          sharps: [] },
+  G:  { name: 'G minor',  flats: ['B','E'],       sharps: [] },
+  Cs: { name: 'C# minor', flats: [],             sharps: ['F','C','G','D'] },
+};
+
+// Standard staff positions for key-sig accidental symbols (pos = half-steps from E4/G2 middle line).
+// Sharps order: F C G D  (conventional, matching the 4-sharp key sigs we use)
+// Treble: F5=8, C5=5, G5=9, D5=6
+// Bass:   F3=6, C3=3, G3=7, D3=4
+const KEY_SIG_SHARP_POSITIONS = {
+  treble: { F:8, C:5, G:9, D:6 },
+  bass:   { F:6, C:3, G:7, D:4 },
+};
+// Flats order: B E A  (the three flat keys we use go up to 3 flats)
+// Treble: Bb4=4, Eb4=0 (or Eb5=7 — conventional is Eb4 on treble), Ab4=3
+// Bass:   Bb2=2, Eb2=-2 (or Eb3=5), Ab2=1
+// Using standard engraving positions:
+//   Treble: Bb→line 4 (pos 4), Eb→space 0 (middle, pos 0), Ab→space 3 (pos 3)
+//   Bass:   Bb→line 2 (pos 2), Eb→space below staff (pos -2), Ab→space 1 (pos 1)
+const KEY_SIG_FLAT_POSITIONS = {
+  treble: { B:4, E:0, A:3 },
+  bass:   { B:2, E:-2, A:1 },
+};
+
+const TREBLE_POSITIONS = {
+  'D3':-8,'E3':-7,'F3':-6,'G3':-5,'A3':-4,'B3':-3,'C4':-2,'D4':-1,
+  'E4':0,'F4':1,'G4':2,'A4':3,'B4':4,'C5':5,'D5':6,'E5':7,'F5':8,'G5':9,
+  'A5':10,'B5':11,'C6':12,'D6':13,'E6':14,
+};
+const BASS_POSITIONS = {
+  'A1':-6,'B1':-5,'C2':-4,'D2':-3,'E2':-2,'F2':-1,
+  'G2':0,'A2':1,'B2':2,'C3':3,'D3':4,'E3':5,'F3':6,'G3':7,'A3':8,'B3':9,
+  'C4':10,'D4':11,'E4':12,'F4':13,'G4':14,
+};
+const TREBLE_POOL = Object.keys(TREBLE_POSITIONS);
+const BASS_POOL   = Object.keys(BASS_POSITIONS);
+
+let srState = {
+  notesCount: 1, clefMode: 'random', keyMode: 'Cs',
+  currentClef: 'treble', currentNotes: [],
+  inputs: [],
+  streak: 0, locked: false,
+};
+
+function srPickClef() {
+  if (srState.clefMode === 'random') return Math.random() < 0.5 ? 'treble' : 'bass';
+  return srState.clefMode;
+}
+function srNoteBase(s) { return s.slice(0,-1); }
+function srAccSymbol(a) { return a==='#'?'♯':a==='b'?'♭':a==='n'?'♮':''; }
+
+function srGenNotes(clef, n, key) {
+  const pool = clef==='treble' ? TREBLE_POOL : BASS_POOL;
+  const posMap = clef==='treble' ? TREBLE_POSITIONS : BASS_POSITIONS;
+  const sig = KEY_SIGS[key];
+  const result = [];
+  const usedPos = new Set();
+  let attempts = 0;
+  while (result.length < n && attempts < 300) {
+    attempts++;
+    const noteStr = pool[Math.floor(Math.random()*pool.length)];
+    const pos = posMap[noteStr];
+    if (usedPos.has(pos)) continue;
+    usedPos.add(pos);
+    const base = srNoteBase(noteStr);
+
+    // Key-sig accidental for this note letter
+    let keySigAcc = null;
+    if (sig.sharps.includes(base)) keySigAcc = '#';
+    else if (sig.flats.includes(base)) keySigAcc = 'b';
+
+    // ~20% chance: override with a natural (courtesy accidental shown on note)
+    // Only meaningful when the key sig would otherwise alter this note
+    let acc = keySigAcc;
+    let courtesyAcc = null;
+    if (keySigAcc !== null && Math.random() < 0.20) {
+      acc = null;        // note is natural
+      courtesyAcc = 'n'; // draw a ♮ next to the notehead
+    }
+
+    result.push({ noteStr, base, acc, courtesyAcc });
+  }
+  result.sort((a,b) => posMap[a.noteStr]-posMap[b.noteStr]);
+  return result;
+}
+
+function srEntryDisplay(e) {
+  if (!e||!e.letter) return null;
+  return e.letter + srAccSymbol(e.acc);
+}
+
+function srNewQuestion() {
+  srState.currentClef = srPickClef();
+  srState.currentNotes = srGenNotes(srState.currentClef, srState.notesCount, srState.keyMode);
+  srState.inputs = Array(srState.notesCount).fill(null).map(()=>({letter:null,acc:null}));
+  srState.locked = false;
+  srUpdateFeedback('','');
+  srRenderEntries('idle');
+  srDraw();
+}
+
+function srRenderEntries(mode, correctArr) {
+  const container = document.getElementById('sr-note-entries');
+  container.innerHTML = '';
+  const n = srState.notesCount;
+  const firstEmpty = srState.inputs.findIndex(e=>!e.letter);
+
+  for (let i=0; i<n; i++) {
+    const div = document.createElement('div');
+    div.className = 'sr-note-entry';
+    div.style.marginBottom = i<n-1 ? '5px' : '0';
+    const inp = srState.inputs[i];
+    const display = srEntryDisplay(inp);
+
+    if (mode==='result' && correctArr) {
+      div.classList.add(correctArr[i]?'sr-correct':'sr-wrong');
+    } else if (display) {
+      div.classList.add('sr-active');
+    } else if (i===firstEmpty) {
+      div.classList.add('sr-active');
+    }
+
+    const noteDisp = document.createElement('div');
+    noteDisp.className = 'sr-note-display'+(display?'':' sr-placeholder');
+    noteDisp.textContent = display || (n>1?`Note ${i+1}`:'Note');
+
+    const sub = document.createElement('div');
+    sub.className = 'sr-note-sublabel';
+
+    if (mode==='result' && correctArr) {
+      const ans = srState.currentNotes[i];
+      const ansStr = ans.base+srAccSymbol(ans.acc);
+      sub.textContent = correctArr[i] ? '✓ correct' : `answer: ${ansStr}`;
+      sub.style.color = correctArr[i] ? 'var(--fc-green)' : 'var(--red)';
+    } else if (display) {
+      sub.className = 'sr-note-sublabel sr-hint';
+      sub.textContent = inp.acc ? 'Enter to confirm' : '1 ♭  2 ♮  3 ♯  — then Enter';
+    } else if (i===firstEmpty) {
+      sub.className = 'sr-note-sublabel sr-hint';
+      sub.textContent = 'type a letter key';
+    } else {
+      sub.textContent = '—';
+    }
+
+    div.appendChild(noteDisp);
+    div.appendChild(sub);
+    container.appendChild(div);
+  }
+}
+
+function srUpdateFeedback(msg,cls) {
+  const el = document.getElementById('sr-feedback');
+  el.textContent = msg; el.className = 'sr-feedback '+cls;
+}
+
+function srCheckAnswers() {
+  const correct = srState.currentNotes.map((note, i) => {
+    const inp = srState.inputs[i];
+    if (!inp || !inp.letter) return false;
+
+    const letterMatch = inp.letter.toUpperCase() === note.base.toUpperCase();
+
+    // note.acc: '#' | 'b' | null (null = natural, whether naturally so or courtesy-overridden)
+    // note.courtesyAcc: 'n' when a ♮ is explicitly drawn on the note overriding the key sig.
+    //
+    // Bare letter (no modifier typed):
+    //   → accepted for standard key-sig notes (key sig is implied, user doesn't need to type ♯/♭)
+    //   → NOT accepted when a courtesy ♮ is shown on the note; user must type ♮ to prove they saw it
+    // Explicit ♮: correct only when the note is actually natural
+    // Explicit ♯ or ♭: must match note.acc exactly
+    // Resolve what the user entered to a concrete accidental:
+    // null (no modifier) → treated as natural (the user claims the note is unaltered)
+    // 'n' (explicit ♮)   → also natural
+    // '#' or 'b'         → sharp or flat
+    const inpAcc = (inp.acc === null || inp.acc === 'n') ? null : inp.acc;
+    const accMatch = (inpAcc === note.acc);
+
+    return letterMatch && accMatch;
+  });
+
+  const allCorrect = correct.every(Boolean);
+  srRenderEntries('result', correct);
+  if (allCorrect) {
+    srState.streak++;
+    document.getElementById('sr-streak-val').textContent = srState.streak;
+    srUpdateFeedback('Correct!','sr-correct');
+    setTimeout(()=>srNewQuestion(), 400);
+  } else {
+    srState.streak = 0;
+    document.getElementById('sr-streak-val').textContent = 0;
+    srUpdateFeedback('Wrong — see answers above','sr-wrong');
+    srState.locked = true;
+    setTimeout(()=>{ srState.locked=false; srNewQuestion(); }, 400);
+  }
+}
+
+document.addEventListener('keydown', e=>{
+  if (!document.getElementById('page-sight').classList.contains('active')) return;
+  if (srState.locked) return;
+  const k = e.key.toUpperCase();
+
+  if ('ABCDEFG'.includes(k)&&k.length===1) {
+    e.preventDefault();
+    const idx = srState.inputs.findIndex(s=>!s.letter);
+    if (idx===-1) return;
+    srState.inputs[idx].letter = k;
+    srState.inputs[idx].acc = null;
+    srRenderEntries('idle'); return;
+  }
+  if (e.key==='1'||e.key==='2'||e.key==='3') {
+    e.preventDefault();
+    const acc = e.key==='1'?'b':e.key==='2'?'n':'#';
+    for (let i=srState.inputs.length-1; i>=0; i--) {
+      if (srState.inputs[i].letter) { srState.inputs[i].acc=acc; break; }
+    }
+    srRenderEntries('idle'); return;
+  }
+  if (e.key==='Backspace') {
+    e.preventDefault();
+    for (let i=srState.inputs.length-1; i>=0; i--) {
+      if (srState.inputs[i].letter) { srState.inputs[i]={letter:null,acc:null}; break; }
+    }
+    srRenderEntries('idle'); return;
+  }
+  if (e.key==='Enter') {
+    e.preventDefault();
+    if (!srState.inputs.every(s=>s.letter)) {
+      srUpdateFeedback('Fill all '+srState.notesCount+' note(s) first',''); return;
+    }
+    srCheckAnswers(); return;
+  }
+});
+
+document.getElementById('set-a').addEventListener('change',e=>{ srState.notesCount=parseInt(e.target.value); srNewQuestion(); });
+document.getElementById('set-b').addEventListener('change',e=>{ srState.clefMode=e.target.value; srNewQuestion(); });
+document.getElementById('set-c').addEventListener('change',e=>{ srState.keyMode=e.target.value; srNewQuestion(); });
+
+// ─── Drawing ─────────────────────────────────────────────────────────────────
+
+const CW = 240, CH = 280;
+
+function initCanvas() {
+  const canvas = document.getElementById('staff-canvas');
+  canvas.width = CW*2; canvas.height = CH*2;
+  canvas.style.width = CW+'px'; canvas.style.height = CH+'px';
+}
+
+function srDraw() {
+  const canvas = document.getElementById('staff-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(2,2);
+  ctx.clearRect(0,0,CW,CH);
+
+  const lineCol = 'rgba(255,255,255,0.18)';
+  const noteCol = '#e8e8e8';
+  const ledgCol = 'rgba(255,255,255,0.4)';
+  const keyCol  = 'rgba(195,222,232,0.55)';
+  const clefCol = '#d8d8d8';
+  const keySigCol = 'rgba(195,222,232,0.75)';
+
+  const STEP = 10;
+  const staffCY = CH/2 + 5;
+  const staffTop = staffCY - 2*STEP;
+
+  // Draw staff lines
+  ctx.strokeStyle = lineCol; ctx.lineWidth = 0.8;
+  for (let i=0; i<5; i++) {
+    const y = staffTop + (4-i*2)*STEP;
+    ctx.beginPath(); ctx.moveTo(8,y); ctx.lineTo(CW-8,y); ctx.stroke();
+  }
+
+  function posToY(pos) { return staffTop + (4-pos)*STEP; }
+
+  // Draw clef
+  srDrawClef(ctx, srState.currentClef, staffTop, STEP, clefCol);
+
+  // Key name label (top right)
+  ctx.fillStyle = keyCol;
+  ctx.font = `400 9px 'Space Mono', monospace`;
+  ctx.textAlign = 'right';
+  ctx.fillText(KEY_SIGS[srState.keyMode].name, CW-8, 12);
+
+  // ── Draw key signature accidentals on the staff ──────────────────────────
+  const sig = KEY_SIGS[srState.keyMode];
+  const keySigX = srState.currentClef === 'treble' ? 38 : 34; // start just after clef
+  const accSpacing = 9; // horizontal spacing between accidentals
+  ctx.fillStyle = keySigCol;
+  ctx.font = `bold ${STEP * 1.6}px serif`;
+  ctx.textAlign = 'center';
+
+  // Sharp order: F C G D A (E B) — standard circle-of-fifths order
+  const SHARP_ORDER = ['F','C','G','D','A','E','B'];
+  // Flat order:  B E A D G C F
+  const FLAT_ORDER  = ['B','E','A','D','G','C','F'];
+
+  const posMap_keysig = srState.currentClef === 'treble'
+    ? KEY_SIG_SHARP_POSITIONS.treble
+    : KEY_SIG_SHARP_POSITIONS.bass;
+  const posMap_flat_keysig = srState.currentClef === 'treble'
+    ? KEY_SIG_FLAT_POSITIONS.treble
+    : KEY_SIG_FLAT_POSITIONS.bass;
+
+  if (sig.sharps.length > 0) {
+    let xOff = 0;
+    for (const note of SHARP_ORDER) {
+      if (!sig.sharps.includes(note)) continue;
+      const pos = posMap_keysig[note];
+      if (pos === undefined) continue;
+      const y = posToY(pos);
+      ctx.fillText('♯', keySigX + xOff, y + STEP * 0.38);
+      xOff += accSpacing;
+    }
+  } else if (sig.flats.length > 0) {
+    let xOff = 0;
+    for (const note of FLAT_ORDER) {
+      if (!sig.flats.includes(note)) continue;
+      const pos = posMap_flat_keysig[note];
+      if (pos === undefined) continue;
+      const y = posToY(pos);
+      ctx.fillText('♭', keySigX + xOff, y + STEP * 0.38);
+      xOff += accSpacing;
+    }
+  }
+
+  // How wide the key sig takes up (used to offset note placement)
+  const keySigWidth = sig.sharps.length > 0
+    ? sig.sharps.length * accSpacing
+    : sig.flats.length * accSpacing;
+
+  // Note horizontal centre — shifted right to clear key sig
+  const cx = keySigX + keySigWidth + 22;
+
+  const posMap = srState.currentClef==='treble' ? TREBLE_POSITIONS : BASS_POSITIONS;
+  const NR = STEP*0.52;
+
+  const positions = srState.currentNotes.map(n=>posMap[n.noteStr]);
+  const offsets = srComputeChordOffsets(positions, NR);
+
+  const allX = offsets.map(o => cx+o);
+  const xMin = Math.min(...allX) - NR - 5;
+  const xMax = Math.max(...allX) + NR + 5;
+  const minPos = Math.min(...positions);
+  const maxPos = Math.max(...positions);
+
+  // Ledger lines
+  ctx.strokeStyle = ledgCol; ctx.lineWidth = 1.2;
+
+  if (minPos < 0) {
+    const lowestEven = minPos % 2 === 0 ? minPos : minPos - 1;
+    for (let lp = -2; lp >= lowestEven; lp -= 2) {
+      const ly = posToY(lp);
+      ctx.beginPath(); ctx.moveTo(xMin, ly); ctx.lineTo(xMax, ly); ctx.stroke();
+    }
+  }
+
+  if (maxPos > 8) {
+    const highestEven = maxPos % 2 === 0 ? maxPos : maxPos + 1;
+    for (let lp = 10; lp <= highestEven; lp += 2) {
+      const ly = posToY(lp);
+      ctx.beginPath(); ctx.moveTo(xMin, ly); ctx.lineTo(xMax, ly); ctx.stroke();
+    }
+  }
+
+  // Draw noteheads (no accidental drawn on the note itself — it's shown in key sig)
+  srState.currentNotes.forEach((note,i)=>{
+    const pos = posMap[note.noteStr];
+    if (pos===undefined) return;
+    const y = posToY(pos);
+    const nx = cx + offsets[i];
+
+    ctx.fillStyle = noteCol;
+    ctx.beginPath();
+    ctx.ellipse(nx, y, NR, NR*0.74, -0.18, 0, Math.PI*2);
+    ctx.fill();
+
+    // Draw courtesy accidental next to note if it overrides the key sig
+    // (e.g. a natural sign on a note that would otherwise be sharp/flat)
+    if (note.courtesyAcc) {
+      ctx.fillStyle = noteCol;
+      ctx.font = `bold ${STEP*1.55}px serif`;
+      ctx.textAlign = 'right';
+      ctx.fillText(srAccSymbol(note.courtesyAcc), nx-NR-1, y+STEP*0.44);
+    }
+  });
+
+  // Stem
+  if (positions.length>0) {
+    const lowestPos  = Math.min(...positions);
+    const highestPos = Math.max(...positions);
+    const midPos = (lowestPos+highestPos)/2;
+    const stemUp = midPos < 4;
+    ctx.strokeStyle = noteCol; ctx.lineWidth = 1.2;
+    if (stemUp) {
+      const topY = posToY(highestPos)-STEP*3.5;
+      const botY = posToY(lowestPos);
+      const maxOff = Math.max(...offsets);
+      const sx = cx+maxOff+NR-0.5;
+      ctx.beginPath(); ctx.moveTo(sx,botY); ctx.lineTo(sx,topY); ctx.stroke();
+    } else {
+      const botY = posToY(lowestPos)+STEP*3.5;
+      const topY = posToY(highestPos);
+      const minOff = Math.min(...offsets);
+      const sx = cx+minOff-NR+0.5;
+      ctx.beginPath(); ctx.moveTo(sx,topY); ctx.lineTo(sx,botY); ctx.stroke();
+    }
+  }
+}
+
+function srComputeChordOffsets(positions, NR) {
+  const n = positions.length;
+  if (n===0) return [];
+  const offsets = new Array(n).fill(0);
+  for (let i=0; i<n-1; i++) {
+    if (Math.abs(positions[i+1]-positions[i])<=1) {
+      offsets[i]   = -(NR+1);
+      offsets[i+1] =  (NR+1);
+      i++;
+    }
+  }
+  return offsets;
+}
+
+function srDrawClef(ctx, clef, staffTop, STEP, color) {
+  ctx.fillStyle = color;
+  if (clef==='treble') {
+    ctx.font = `${STEP*7.2}px serif`;
+    ctx.textAlign = 'left';
+    ctx.fillText('𝄞', 6, staffTop+STEP*5.2);
+  } else {
+    ctx.font = `${STEP*4.4}px serif`;
+    ctx.textAlign = 'left';
+    ctx.fillText('𝄢', 8, staffTop+STEP*3.3);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MCQ QUIZ
+══════════════════════════════════════════════════════════ */
+const quizState = {
+  questions: [],
+  order: [],
+  currentIndex: 0,
+  requiredCorrect: 5,
+  selected: null,
+  submitted: false,
+  stats: { done: 0, correct: 0, wrong: 0 }
+};
+
+const OPTION_LETTERS = ['A','B','C','D','E'];
+
+document.getElementById('quizFileInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const data = await file.arrayBuffer();
+  const wb = XLSX.read(data);
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(sheet);
+
+  quizState.questions = rows.map(r => ({
+    question: r.question ?? r.Question,
+    options: { A: r.A, B: r.B, C: r.C, D: r.D, E: r.E },
+    correct: String(r.answer ?? r.Answer).trim().toUpperCase(),
+    correctCount: 0,
+    done: false
+  })).filter(q => q.question && q.correct);
+
+  quizState.requiredCorrect = Number(document.querySelector('input[name="quizRepeatChoice"]:checked').value);
+  quizState.order = quizState.questions.map((_, i) => i);
+  quizState.stats = { done: 0, correct: 0, wrong: 0 };
+
+  document.getElementById('quizCardActions').style.display = 'flex';
+  updateQuizStats();
+  renderQuizList();
+  document.getElementById('quizProgressLabel').textContent = 'Ready — press Start';
+});
+
+document.getElementById('quizRandomiseBtn').addEventListener('click', () => {
+  quizState.order.sort(() => Math.random() - 0.5);
+  renderCurrentQuestion();
+});
+
+document.querySelectorAll('input[name="quizRepeatChoice"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    quizState.requiredCorrect = Number(e.target.value);
+    quizState.questions.forEach(q => { q.correctCount = 0; q.done = false; });
+    quizState.stats = { done: 0, correct: 0, wrong: 0 };
+    updateQuizStats();
+  });
+});
+
+function startQuiz() {
+  quizState.order = quizState.questions.map((_, i) => i).filter(i => !quizState.questions[i].done);
+  quizState.currentIndex = 0;
+  document.getElementById('quizCompletionScreen').style.display = 'none';
+  document.getElementById('quizCard').style.display = 'block';
+  renderCurrentQuestion();
+}
+
+function restartQuiz() {
+  quizState.questions.forEach(q => { q.correctCount = 0; q.done = false; });
+  quizState.stats = { done: 0, correct: 0, wrong: 0 };
+  updateQuizStats();
+  startQuiz();
+}
+
+function toggleQuizList() {
+  const wrap = document.getElementById('quizTableWrap');
+  wrap.style.display = wrap.style.display === 'block' ? 'none' : 'block';
+}
+
+function renderCurrentQuestion() {
+  const remainingIdx = quizState.order.filter(i => !quizState.questions[i].done);
+
+  if (remainingIdx.length === 0) {
+    document.getElementById('quizCard').style.display = 'none';
+    document.getElementById('quizCompletionScreen').style.display = 'block';
+    return;
+  }
+
+  const idx = remainingIdx[0];
+  const q = quizState.questions[idx];
+  quizState.currentIndex = idx;
+  quizState.selected = null;
+  quizState.submitted = false;
+
+  const card = document.getElementById('quizCard');
+  card.innerHTML = `
+    <div class="quiz-question">${q.question}</div>
+    <div class="quiz-options" id="quizOptions">
+      ${OPTION_LETTERS.filter(l => q.options[l] !== undefined && q.options[l] !== '')
+        .map(l => `
+          <button class="quiz-option-btn" data-letter="${l}" onclick="selectOption('${l}')">
+            <span class="opt-letter">${l}</span> ${q.options[l]}
+          </button>
+        `).join('')}
+    </div>
+    <button class="btn" id="quizSubmitBtn" onclick="submitAnswer()">Enter ↵</button>
+  `;
+}
+
+function selectOption(letter) {
+  if (quizState.submitted) return;
+  quizState.selected = letter;
+  document.querySelectorAll('.quiz-option-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.letter === letter);
+  });
+}
+
+function submitAnswer() {
+  if (quizState.submitted || !quizState.selected) return;
+  quizState.submitted = true;
+
+  const q = quizState.questions[quizState.currentIndex];
+  const isCorrect = quizState.selected === q.correct;
+
+  document.querySelectorAll('.quiz-option-btn').forEach(btn => {
+    const letter = btn.dataset.letter;
+    if (letter === q.correct) btn.classList.add('correct');
+    else if (letter === quizState.selected) btn.classList.add('incorrect');
+  });
+
+  if (isCorrect) {
+    q.correctCount++;
+    quizState.stats.correct++;
+    if (q.correctCount >= quizState.requiredCorrect) {
+      q.done = true;
+      quizState.stats.done++;
+    }
+  } else {
+    q.correctCount = 0;
+    quizState.stats.wrong++;
+  }
+
+  updateQuizStats();
+  renderQuizList();
+  setTimeout(renderCurrentQuestion, 700);
+}
+
+document.addEventListener('keydown', (e) => {
+  const quizVisible = document.getElementById('page-quiz')?.classList.contains('active')
+    && document.getElementById('quizCard')?.style.display !== 'none';
+  if (!quizVisible) return;
+
+  const key = e.key.toUpperCase();
+
+  if (OPTION_LETTERS.includes(key)) {
+    const btn = document.querySelector(`.quiz-option-btn[data-letter="${key}"]`);
+    if (btn) selectOption(key);
+  } else if (e.key === 'Enter') {
+    submitAnswer();
+  }
+});
+
+function updateQuizStats() {
+  const total = quizState.questions.length;
+  const remaining = total - quizState.stats.done;
+  document.getElementById('quizStatRemaining').textContent = remaining;
+  document.getElementById('quizStatDone').textContent = quizState.stats.done;
+  document.getElementById('quizStatCorrect').textContent = quizState.stats.correct;
+  document.getElementById('quizStatWrong').textContent = quizState.stats.wrong;
+
+  const pct = total ? Math.round((quizState.stats.done / total) * 100) : 0;
+  document.getElementById('quizProgressFill').style.width = pct + '%';
+  document.getElementById('quizProgressPct').textContent = pct + '%';
+  document.getElementById('quizProgressLabel').textContent =
+    total ? `${quizState.stats.done} / ${total} mastered` : 'Upload a file to begin';
+}
+
+function renderQuizList() {
+  const table = document.getElementById('quizListTable');
+  table.innerHTML = `
+    <tr><th>Question</th><th>Correct</th><th>Streak</th></tr>
+    ${quizState.questions.map(q => `
+      <tr class="${q.done ? 'mastered-row' : ''}">
+        <td>${q.question}</td>
+        <td>${q.correct}</td>
+        <td>${q.correctCount}/${quizState.requiredCorrect}</td>
+      </tr>
+    `).join('')}
+  `;
+}
+
+window.selectOption = selectOption;
+window.submitAnswer = submitAnswer;
+window.startQuiz = startQuiz;
+window.restartQuiz = restartQuiz;
+window.toggleQuizList = toggleQuizList;
+
+/* ── Boot ── */
+initTracker();
+onRepeatChange();
+initCanvas();
+srNewQuestion();
+</script>
+</body>
+</html>
