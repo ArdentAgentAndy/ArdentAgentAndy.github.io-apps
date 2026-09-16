@@ -28,6 +28,8 @@
     --fc-surface2: #1e1e24;
     --fc-border: #2a2a32;
     --fc-muted: rgba(240,239,244,0.45);
+    --fc-green: #5bc87a;
+    --fc-red: #ff6b6b;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -995,7 +997,11 @@
     border-radius: 18px;
     padding: 36px 32px 28px;
     min-height: 200px;
+    transition: background 0.35s, border-color 0.35s;
   }
+  
+  #quizCard.correct { background: #1b2e21; border-color: var(--fc-green); }
+  #quizCard.wrong   { background: #2e1b1b; border-color: var(--fc-red); }
 
   .quiz-question {
     font-family: 'Playfair Display', serif;
@@ -2533,6 +2539,7 @@ function submitAnswer() {
 
   const q = quizState.questions[quizState.currentIndex];
   const isCorrect = quizState.selected === q.correct;
+  const card = document.getElementById('quizCard');
 
   document.querySelectorAll('.quiz-option-btn').forEach(btn => {
     const letter = btn.dataset.letter;
@@ -2547,16 +2554,17 @@ function submitAnswer() {
       q.done = true;
       quizState.stats.done++;
     }
+    card.className = 'correct';
   } else {
     q.correctCount = 0;
     quizState.stats.wrong++;
+    card.className = 'wrong';
   }
 
   updateQuizStats();
   renderQuizList();
-  setTimeout(renderCurrentQuestion, 700);
+  setTimeout(() => { card.className = ''; renderCurrentQuestion(); }, 700);
 }
-
 document.addEventListener('keydown', (e) => {
   const quizVisible = document.getElementById('page-quiz')?.classList.contains('active')
     && document.getElementById('quizCard')?.style.display !== 'none';
