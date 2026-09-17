@@ -2433,6 +2433,11 @@ const quizState = {
   stats: { done: 0, correct: 0, wrong: 0 }
 };
 
+let quizAdvanceTimer = null;
+function cancelQuizAdvance() {
+  if (quizAdvanceTimer) { clearTimeout(quizAdvanceTimer); quizAdvanceTimer = null; }
+}
+
 const OPTION_LETTERS = ['A','B','C','D','E'];
 
 document.getElementById('quizFileInput').addEventListener('change', async (e) => {
@@ -2462,8 +2467,11 @@ document.getElementById('quizFileInput').addEventListener('change', async (e) =>
 });
 
 document.getElementById('quizRandomiseBtn').addEventListener('click', () => {
-  quizState.order.sort(() => Math.random() - 0.5);
+  if (quizState.order.length === 0) return;
+  cancelQuizAdvance();
+  shuffleInPlace(quizState.order);
   renderCurrentQuestion();
+  document.getElementById('quizRandomiseBtn').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 220 });
 });
 
 document.querySelectorAll('input[name="quizRepeatChoice"]').forEach(radio => {
@@ -2476,7 +2484,11 @@ document.querySelectorAll('input[name="quizRepeatChoice"]').forEach(radio => {
 });
 
 function startQuiz() {
-  quizState.order = quizState.questions.map((_, i) => i).filter(i => !quizState.questions[i].done);
+  cancelQuizAdvance();
+  if (quizState.order.length !== quizState.questions.length) {
+    quizState.order = quizState.questions.map((_, i) => i);
+  }
+  quizState.order = quizState.order.filter(i => !quizState.questions[i].done);
   quizState.currentIndex = 0;
   document.getElementById('quizCompletionScreen').style.display = 'none';
   document.getElementById('quizCard').style.display = 'block';
@@ -2504,7 +2516,7 @@ function renderCurrentQuestion() {
     return;
   }
 
-  const idx = remainingIdx[0];
+  const idx = remainingIdx[Math.floor(Math.random() * remainingIdx.length)];
   const q = quizState.questions[idx];
   quizState.currentIndex = idx;
   quizState.selected = null;
@@ -2563,7 +2575,12 @@ function submitAnswer() {
 
   updateQuizStats();
   renderQuizList();
-  setTimeout(() => { card.className = ''; renderCurrentQuestion(); }, 700);
+  cancelQuizAdvance();
+  quizAdvanceTimer = setTimeout(() => {
+    quizAdvanceTimer = null;
+    card.className = '';
+    renderCurrentQuestion();
+  }, 700);
 }
 document.addEventListener('keydown', (e) => {
   const quizVisible = document.getElementById('page-quiz')?.classList.contains('active')
